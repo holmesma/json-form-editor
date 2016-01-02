@@ -1,0 +1,5 @@
+interface JQuery {
+    alphanumeric: any;
+}
+
+

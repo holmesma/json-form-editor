@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+    
+    <head>
+        <meta charset="utf-8">
+        <title>Test</title>
+        <link rel="stylesheet" type="text/css" src="//normalize-css.googlecode.com/svn/trunk/normalize.css" />
+        <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/3.18.1/build/cssreset/cssreset-min.css">
+        <link rel="stylesheet" type="text/css" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/themes/smoothness/jquery-ui.css">
+        <script>
+
+        </script>
+        <style type="text/css">
+            div{font-size:11px;}
+        </style>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.10.3/moment.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.string/3.0.3/underscore.string.min.js"></script>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.22/require.js"></script>
+
+        <script type="text/javascript">
+            $(function() {
+           		$(document).ready(function() {
+                    requirejs.config({
+                        baseUrl: "../gen",
+                        shim: {
+                            'underscore': {
+                                exports: '_'
+                            }
+                        }
+                    });
+                });
+                
+                require(["Editor"], function(Editor){
+                    console.info("loaded");
+                    
+                    var schema = {
+                        "type": "object",
+                        "properties": {
+                            "name": {"type": "string"}
+                        }
+                    };
+                    var startVal = {name: "martin"};
+                    var editor = new Editor({parent: $("#parent"), schema: schema, startVal:startVal});
+                });
+        
+        });
+        </script>
+    </head>
+    
+    <body>
+        <div id="parent"></div>
+    </body>
+
+</html>

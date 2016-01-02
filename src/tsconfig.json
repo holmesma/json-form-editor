@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "target": "es5",
+    "module": "amd",
+    "removeComments": true,
+    "moduleResolution": "classic",
+    "preserveConstEnums": true,
+    "rootDir": ".",
+    "outDir": "../gen",
+    "sourceMap": false
+  }
+}

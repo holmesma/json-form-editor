@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+
+<project name="JSON-Form-Editor" default="build" >
+
+    <property name="nodejs.home" value="C:\\Users\\martin\\AppData\\Roaming\\npm" />
+
+    <target name="clean">
+        <delete dir="gen" />
+        <mkdir dir="gen" />
+    </target>
+
+	<target name="build-ts">
+		<condition property="tsc" value="${nodejs.home}\tsc.cmd">
+			<os family="windows" />
+		</condition>
+		<condition property="tsc" value="tsc">
+			<not>
+				<os family="windows" />
+			</not>
+		</condition>
+		
+		<exec dir="." executable="${tsc}">
+			<arg line="--project" />
+			<arg line="src" />
+		</exec>
+	</target>
+
+	<target name="build" depends="clean,build-ts">
+
+
+	</target>
+    
+</project>
