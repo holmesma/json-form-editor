@@ -1,28 +1,31 @@
 <!DOCTYPE html>
 <html lang="en">
-    
-    <head>
-        <meta charset="utf-8">
-        <title>Test</title>
-        <link rel="stylesheet" type="text/css" src="//normalize-css.googlecode.com/svn/trunk/normalize.css" />
-        <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/3.18.1/build/cssreset/cssreset-min.css">
-        <link rel="stylesheet" type="text/css" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/themes/smoothness/jquery-ui.css">
-        <script>
 
-        </script>
-        <style type="text/css">
-            div{font-size:11px;}
-        </style>
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
-        <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.10.3/moment.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.string/3.0.3/underscore.string.min.js"></script>
-        
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.22/require.js"></script>
+<head>
+    <meta charset="utf-8">
+    <title>Test</title>
+    <link rel="stylesheet" type="text/css" src="//normalize-css.googlecode.com/svn/trunk/normalize.css" />
+    <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/3.18.1/build/cssreset/cssreset-min.css">
+    <link rel="stylesheet" type="text/css" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/themes/smoothness/jquery-ui.css">
+    <script>
 
-        <script type="text/javascript">
-            $(function() {
+    </script>
+    <style type="text/css">
+        body {
+            font-size: 17px;
+            font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;
+        }
+    </style>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.10.3/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.string/3.0.3/underscore.string.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.22/require.js"></script>
+
+    <script type="text/javascript">
+        $(function() {
            		$(document).ready(function() {
                     requirejs.config({
                         baseUrl: "../gen",
@@ -40,19 +43,39 @@
                     var schema = {
                         "type": "object",
                         "properties": {
-                            "name": {"type": "string"}
+                            "first": {"type": "string"},
+                            "last": {"type": "string"},
+                            "inner" : {
+                                "type": "object",
+                                "properties": {
+                                    "firstinner": {"type": "string"},
+                                    "lastinner": {"type": "string"}
+                                }    
+                            }
                         }
                     };
-                    var startVal = {name: "martin"};
+                    var startVal = {first: "martin", last: "holmes", inner: {firstinner: "martini", lastinner: "holmesi"}};
                     var editor = new Editor({parent: $("#parent"), schema: schema, startVal:startVal});
+                    editor.on("editor:ready", function(e){
+                        $("#button").click(function(){
+                            $("#area").text(JSON.stringify(e.getValue()))
+                        });
+                    });
+                    editor.watch("preRender", "root.inner.firstinner", function(e){
+                        $("#area2").text("preRender")
+                    });
+                    
                 });
         
         });
-        </script>
-    </head>
-    
-    <body>
-        <div id="parent"></div>
-    </body>
+    </script>
+</head>
+
+<body>
+    <div id="parent"></div>
+    <button id="button">Press</button>
+    <div id="area"></div>
+    <div id="area2"></div>
+</body>
 
 </html>

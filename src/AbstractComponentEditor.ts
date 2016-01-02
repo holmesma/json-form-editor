@@ -10,6 +10,7 @@ class AbstractComponentEditor {
     editor: Editor;
     schema: any;
     path: string;
+    key: string;
     container: JQuery;
     value: any;
 
@@ -19,32 +20,71 @@ class AbstractComponentEditor {
         this.editor = options.editor
         this.schema = options.schema
         this.path = options.path
+        this.key = this.path.split('.').pop()
     }
 
-    setValue(value: any, init: boolean): AbstractComponentEditor {
+    refreshValue(): void { }
+
+    preRender(): void {
+        this.notify("preRender")
+    }
+
+    render(): void {
+        this.notify("render")
+    }
+
+    postRender(): void {
+        this.notify("postRender")
+    }
+
+    setValue(value: any, initial: boolean): AbstractComponentEditor {
         this.value = value
         return this
+    }
+
+    hasValueChanged(value: any): boolean {
+        return this.value === value
     }
 
     getValue(): any {
         return this.value
     }
-    
-    preRender(): void {
 
+    change(evt: any) {
+        if (this.parent) this.parent.onChildEditorChange(evt)
+        else this.editor.onChange()
     }
 
-    render(): void {
-
+    onChildEditorChange(evt: any) {
+        this.onChange(evt)
     }
 
-    postRender(): void {
+    fireOnChange(bubble: boolean, initial?: boolean) {
+        var info = this.buildEventInfo(this)
+        this.onChange({ bubble: bubble, source: this, type: (initial) ? "initial" : "change", info: info })
+    }
 
+    private buildEventInfo(editor: AbstractComponentEditor): Globals.EditorChangeEventInfo {
+        var isArrayItem = false
+        var p: any = editor.parent
+        if (p && p.rows) isArrayItem = true
+        return { key: editor.key, path: editor.path, isArrayItem: isArrayItem }
+    }
+
+    private onChange(evt: Globals.EditorChangeEvent) {
+        var type = (evt.type === "change") ? "change" : "initialise"
+        this.notify(type, evt)
+        //if (this.watch_listener) this.watch_listener()
+        if (evt.bubble) this.change(evt)
+    }
+
+    notify(events: string, evt?: any) {
+        this.editor.notifyWatchers(events, this.path, evt)
     }
 
     setContainer(container: JQuery) {
-        this.container = container;
-        if (this.schema.id) this.container.attr('data-schemaid', this.schema.id);
+        this.container = container
+        if (this.schema.id) this.container.attr('data-schemaid', this.schema.id)
         this.container.attr('data-schematype', this.schema.type)
         this.container.attr('data-schemapath', this.path)
     }

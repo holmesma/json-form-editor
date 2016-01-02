@@ -12,15 +12,36 @@ define(["require", "exports", "AbstractComponentContainerEditor"], function (req
         ObjectEditor.prototype.setValue = function (value, init) {
             _super.prototype.setValue.call(this, value, init);
             _.each(this.editors, function (editor, key) {
-                editor.setValue(value, init);
+                editor.setValue(value[key], init);
             });
             return this;
+        };
+        ObjectEditor.prototype.getValue = function () {
+            var result = _super.prototype.getValue.call(this);
+            for (var i in result) {
+                if (result.hasOwnProperty(i)) {
+                    if (!result[i])
+                        delete result[i];
+                }
+            }
+            return result;
+        };
+        ObjectEditor.prototype.onChildEditorChange = function (evt) {
+            this.refreshValue();
+            _super.prototype.onChildEditorChange.call(this, evt);
+        };
+        ObjectEditor.prototype.refreshValue = function () {
+            var _this = this;
+            this.value = {};
+            _.each(this.editors, function (editor, key) {
+                _this.value[key] = _this.editors[key].getValue();
+            });
         };
         ObjectEditor.prototype.preRender = function () {
             var _this = this;
             _.each(this.schema.properties, function (idx, name) {
                 var schema = _this.schema.properties[name];
-                _this.editors[name] = _this.editor.createEditor(_this.schema, {
+                _this.editors[name] = _this.editor.createEditor(schema, {
                     editor: _this.editor,
                     schema: schema,
                     path: _this.path + '.' + name,
@@ -28,6 +49,7 @@ define(["require", "exports", "AbstractComponentContainerEditor"], function (req
                 });
                 _this.editors[name].preRender();
             });
+            _super.prototype.preRender.call(this);
         };
         ObjectEditor.prototype.render = function () {
             var _this = this;
@@ -36,11 +58,13 @@ define(["require", "exports", "AbstractComponentContainerEditor"], function (req
                 editor.setContainer(holder);
                 editor.render();
             });
+            _super.prototype.render.call(this);
         };
         ObjectEditor.prototype.postRender = function () {
             _.each(this.editors, function (editor, key) {
                 editor.postRender();
             });
+            _super.prototype.postRender.call(this);
         };
         ObjectEditor.prototype.destroy = function () {
             _super.prototype.destroy.call(this);

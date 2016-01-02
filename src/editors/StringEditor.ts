@@ -11,17 +11,21 @@ class StringEditor extends AbstractComponentEditor {
         super(options)
     }
 
-    setValue(value: any, init: boolean): AbstractComponentEditor {
-        super.setValue(value, init)
+    setValue(value: any, initial: boolean): AbstractComponentEditor {
+        var changed = this.hasValueChanged(value)
+        super.setValue(value, initial)
         this.input.val(value)
+        this.fireOnChange(changed, initial)
         return this
     }
 
     render(): void {
         this.input = $("<input type='text'></input>").appendTo(this.container)
         this.input.change(() => {
-
+            this.value = this.input.val()
+            this.fireOnChange(true)
         })
+        super.render()
     }
 
     destroy(): void {
