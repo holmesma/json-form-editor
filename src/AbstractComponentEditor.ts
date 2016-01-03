@@ -30,6 +30,14 @@ class AbstractComponentEditor {
     }
 
     render(): void {
+
+        var label = this.schema.title || this.key
+        var header = label
+        var description = this.schema.description || ""
+
+        $("<div class='content-description'>").text(description).prependTo(this.container)
+        $("<div class='content-label'>").text(label).prependTo(this.container)
+        $("<div class='content-header'>").text(header).prependTo(this.container)
         this.notify("render")
     }
 
@@ -87,8 +95,13 @@ class AbstractComponentEditor {
         if (this.schema.id) this.container.attr('data-schemaid', this.schema.id)
         this.container.attr('data-schematype', this.schema.type)
         this.container.attr('data-schemapath', this.path)
+        this.container.addClass(this.getContainerClass())
     }
 
+    getContainerClass(): string {
+        return "content-container"
+    }
+    
     destroy(): void {
         this.container.empty()
     }

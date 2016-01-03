@@ -72,6 +72,10 @@ class ObjectEditor extends AbstractComponentContainerEditor {
         super.postRender()
     }
 
+    getContainerClass(): string {
+        return "object-container"
+    }
+    
     destroy(): void {
         super.destroy()
     }

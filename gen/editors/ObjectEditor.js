@@ -66,6 +66,9 @@ define(["require", "exports", "AbstractComponentContainerEditor"], function (req
             });
             _super.prototype.postRender.call(this);
         };
+        ObjectEditor.prototype.getContainerClass = function () {
+            return "object-container";
+        };
         ObjectEditor.prototype.destroy = function () {
             _super.prototype.destroy.call(this);
         };

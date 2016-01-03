@@ -15,6 +15,7 @@ define(["require", "exports", "Defaults", "Events", "WatchHelper", "editors/Obje
             Defaults.editors["string"] = StringEditor;
             this.options = options;
             this.parentContainer = options.parent;
+            this.parentContainer.addClass("editor-container");
             this.schema = options.schema;
             this.container = $("<div>");
             this.parentContainer.append(this.container);

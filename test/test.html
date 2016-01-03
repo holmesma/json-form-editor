@@ -43,7 +43,11 @@
                     var schema = {
                         "type": "object",
                         "properties": {
-                            "first": {"type": "string"},
+                            "first": {
+                                "title": "title",
+                                "description": "description",
+                                "type": "string"
+                             },
                             "last": {"type": "string"},
                             "inner" : {
                                 "type": "object",

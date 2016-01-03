@@ -12,7 +12,7 @@ class AbstractComponentContainerEditor extends AbstractComponentEditor {
         this.editors = {}
 
     }
-
+   
     destroy(): void {
         _.each(this.editors, function(editor, idx) {
             editor.destroy()
