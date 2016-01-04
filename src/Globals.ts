@@ -10,20 +10,20 @@ export interface FlagMap {
 }
 
 export interface EditorChangeEvent {
-  bubble: boolean;
-  source: AbstractComponentEditor;
-  type: string;
-  info: EditorChangeEventInfo;
+    bubble: boolean;
+    source: AbstractComponentEditor;
+    type: string;
+    info: EditorChangeEventInfo;
 }
 
 export interface EditorChangeEventInfo {
-  key: string;
-  path: string;
-  isArrayItem: boolean;
+    key: string;
+    path: string;
+    isArrayItem: boolean;
 }
 
 export interface WatchList {
-  [key: string]: Array<(evt:any) => void>;
+    [key: string]: Array<(evt: any) => void>;
 }
 
 export interface EditorOptions {
@@ -47,4 +47,14 @@ export interface EditorFactory {
     [key: string]: { new (options: ComponentEditorOptions): AbstractComponentEditor; };
 }
 
+export interface ItemInfoMap {
+  [key: string]: ItemInfo;
+}
+
+export interface ItemInfo {
+    title: string;
+    'default': string;// guessed
+    width: number;
+    childEditors: Array<string>; // guessed
+}
 

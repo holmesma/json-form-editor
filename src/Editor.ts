@@ -5,6 +5,7 @@ import Defaults = require("Defaults");
 import Events = require("Events");
 import WatchHelper = require("WatchHelper");
 import AbstractComponentEditor = require("AbstractComponentEditor");
+import ArrayEditor = require("editors/ArrayEditor");
 import ObjectEditor = require("editors/ObjectEditor");
 import StringEditor = require("editors/StringEditor");
 
@@ -24,6 +25,7 @@ class Editor extends Events {
         super({ "editor:ready": "memory" })
         this.watchHelper = new WatchHelper(["preRender", "render", "postRender", "initialise", "change"])
         this.addEventCallback("editor:ready")
+        Defaults.editors["array"] = ArrayEditor
         Defaults.editors["object"] = ObjectEditor
         Defaults.editors["string"] = StringEditor
         this.options = options

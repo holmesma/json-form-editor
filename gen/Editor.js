@@ -3,7 +3,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-define(["require", "exports", "Defaults", "Events", "WatchHelper", "editors/ObjectEditor", "editors/StringEditor"], function (require, exports, Defaults, Events, WatchHelper, ObjectEditor, StringEditor) {
+define(["require", "exports", "Defaults", "Events", "WatchHelper", "editors/ArrayEditor", "editors/ObjectEditor", "editors/StringEditor"], function (require, exports, Defaults, Events, WatchHelper, ArrayEditor, ObjectEditor, StringEditor) {
     var Editor = (function (_super) {
         __extends(Editor, _super);
         function Editor(options) {
@@ -11,6 +11,7 @@ define(["require", "exports", "Defaults", "Events", "WatchHelper", "editors/Obje
             _super.call(this, { "editor:ready": "memory" });
             this.watchHelper = new WatchHelper(["preRender", "render", "postRender", "initialise", "change"]);
             this.addEventCallback("editor:ready");
+            Defaults.editors["array"] = ArrayEditor;
             Defaults.editors["object"] = ObjectEditor;
             Defaults.editors["string"] = StringEditor;
             this.options = options;

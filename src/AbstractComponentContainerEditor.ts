@@ -5,7 +5,7 @@ import AbstractComponentEditor = require("AbstractComponentEditor")
 
 class AbstractComponentContainerEditor extends AbstractComponentEditor {
 
-    editors: Globals.Editors;
+    editors: Globals.Editors; // here?
 
     constructor(options: Globals.ComponentEditorOptions) {
         super(options)

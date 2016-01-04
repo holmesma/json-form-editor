@@ -7,9 +7,7 @@
     <link rel="stylesheet" type="text/css" src="//normalize-css.googlecode.com/svn/trunk/normalize.css" />
     <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/3.18.1/build/cssreset/cssreset-min.css">
     <link rel="stylesheet" type="text/css" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/themes/smoothness/jquery-ui.css">
-    <script>
-
-    </script>
+    
     <style type="text/css">
         body {
             font-size: 17px;
@@ -21,26 +19,25 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.10.3/moment.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.string/3.0.3/underscore.string.min.js"></script>
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.isotope/2.2.2/isotope.pkgd.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.22/require.js"></script>
 
     <script type="text/javascript">
-        $(function() {
-           		$(document).ready(function() {
-                    requirejs.config({
-                        baseUrl: "../gen",
-                        shim: {
-                            'underscore': {
-                                exports: '_'
-                            }
+        $(document).ready(function() {
+         
+                requirejs.config({
+                    baseUrl: "../gen",
+                    shim: {
+                        'underscore': {
+                            exports: '_'
                         }
-                    });
+                    }
                 });
-                
+                    
                 require(["Editor"], function(Editor){
                     console.info("loaded");
                     
-                    var schema = {
+                    var schema2 = {
                         "type": "object",
                         "properties": {
                             "first": {
@@ -58,11 +55,47 @@
                             }
                         }
                     };
-                    var startVal = {first: "martin", last: "holmes", inner: {firstinner: "martini", lastinner: "holmesi"}};
+                    
+                      var schema = {
+                        "type": "object",
+                        "properties": {
+                            "first": {
+                                "title": "title",
+                                "description": "description",
+                                "type": "string"
+                             },
+                            "last": {
+                                "type": "array",
+                                "format": "table",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "age": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                           }
+                        }
+                    };                  
+                    var startVal2 = {first: "martin", last: "holmes", inner: {firstinner: "martini", lastinner: "holmesi"}};
+                    var startVal = {first: "martin", last: [{name: "martin", age: "holmes"},{name: "martin2", age: "holmes2"}]};
                     var editor = new Editor({parent: $("#parent"), schema: schema, startVal:startVal});
                     editor.on("editor:ready", function(e){
                         $("#button").click(function(){
                             $("#area").text(JSON.stringify(e.getValue()))
+                        });
+                        
+                        $('.item-container').isotope({
+                            layoutMode: 'fitRows',
+                            itemSelector: '.object-container'
+                        });
+                        
+                        $('.array-item').isotope({
+                            layoutMode: 'fitRows'
                         });
                     });
                     editor.watch("preRender", "root.inner.firstinner", function(e){
@@ -70,14 +103,15 @@
                     });
                     
                 });
-        
-        });
+                
+               });
+       
     </script>
 </head>
 
 <body>
     <div id="parent"></div>
-    <button id="button">Press</button>
+    
     <div id="area"></div>
     <div id="area2"></div>
 </body>

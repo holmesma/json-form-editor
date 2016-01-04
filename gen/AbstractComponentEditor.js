@@ -14,12 +14,7 @@ define(["require", "exports"], function (require, exports) {
             this.notify("preRender");
         };
         AbstractComponentEditor.prototype.render = function () {
-            var label = this.schema.title || this.key;
-            var header = label;
-            var description = this.schema.description || "";
-            $("<div class='content-description'>").text(description).prependTo(this.container);
-            $("<div class='content-label'>").text(label).prependTo(this.container);
-            $("<div class='content-header'>").text(header).prependTo(this.container);
+            this.getHeader().prependTo(this.container);
             this.notify("render");
         };
         AbstractComponentEditor.prototype.postRender = function () {
@@ -71,6 +66,16 @@ define(["require", "exports"], function (require, exports) {
             this.container.attr('data-schematype', this.schema.type);
             this.container.attr('data-schemapath', this.path);
             this.container.addClass(this.getContainerClass());
+            return container;
+        };
+        AbstractComponentEditor.prototype.getHeader = function () {
+            var label = this.schema.title || this.key;
+            var header = label;
+            var description = this.schema.description || "";
+            var div = $("<div style='width:100%' class='content-header-container'>");
+            $("<div class='content-description'>").text(description).appendTo(div);
+            $("<div class='content-label'>").text(label).appendTo(div);
+            return div;
         };
         AbstractComponentEditor.prototype.getContainerClass = function () {
             return "content-container";
