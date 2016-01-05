@@ -34,11 +34,22 @@ define(["require", "exports", "AbstractComponentContainerEditor"], function (req
                 }
             });
             for (var j = value.length; j < this.rows.length; j++) {
+                this.destroyRow(this.rows[j]);
                 this.rows[j] = null;
             }
             this.rows = this.rows.slice(0, value.length);
             this.refreshValue(initial);
             this.fireOnChange(false, initial);
+            if (this.layout) {
+                this.layout.isotope('layout');
+            }
+            else {
+                if (this.schema.format === 'table') {
+                    this.layout = $('.edit-container', this.itemContainer).isotope({
+                        layoutMode: 'fitRows'
+                    });
+                }
+            }
             return this;
         };
         ArrayEditor.prototype.refreshValue = function (force) {
@@ -74,11 +85,8 @@ define(["require", "exports", "AbstractComponentContainerEditor"], function (req
             this.itemContainer = $("<div class='item-container'>").appendTo(this.container);
             _super.prototype.render.call(this);
         };
-        ArrayEditor.prototype.postRender = function () {
-            _.each(this.editors, function (editor, key) {
-                editor.postRender();
-            });
-            _super.prototype.postRender.call(this);
+        ArrayEditor.prototype.addNewRow = function (value, initial, mergeValue) {
+            this.addRow(value, initial, mergeValue);
         };
         ArrayEditor.prototype.addRow = function (value, initial, mergeValue) {
             var i = this.rows.length;
@@ -90,6 +98,25 @@ define(["require", "exports", "AbstractComponentContainerEditor"], function (req
                 }
                 this.rows[i].setValue(value, initial);
             }
+        };
+        ArrayEditor.prototype.deleteRow = function (i, change) {
+            var value = this.value;
+            var newval = [];
+            _.each(value, function (row, j) {
+                if (j === i) {
+                }
+                else {
+                    newval.push(row);
+                }
+            });
+            this.setValue(newval, false);
+            if (change)
+                this.fireOnChange(true);
+        };
+        ArrayEditor.prototype.destroyRow = function (row, hard) {
+            var holder = row.container;
+            row.destroy();
+            holder.remove();
         };
         ArrayEditor.prototype.getElementEditor = function (i) {
             var item_info = this.getItemInfo(i);
@@ -106,7 +133,7 @@ define(["require", "exports", "AbstractComponentContainerEditor"], function (req
             ret.setContainer(holder).addClass("array-item");
             ret.render();
             ret.postRender();
-            this.getItemButtonPanel().appendTo(holder);
+            this.getItemButtonPanel(i).appendTo($(".edit-container", holder));
             return ret;
         };
         ArrayEditor.prototype.getItemInfo = function (i) {
@@ -147,21 +174,74 @@ define(["require", "exports", "AbstractComponentContainerEditor"], function (req
             return div;
         };
         ArrayEditor.prototype.getButtonPanel = function () {
-            var div = $("<div class='button-container'>");
-            $("<button type='button' class=''>Add</button>").appendTo(div);
-            $("<button type='button' class=''>Delete Last</button>").appendTo(div);
-            $("<button type='button' class=''>Delete All</button>").appendTo(div);
+            var _this = this;
+            var div = $("<div class='array-buttons'>");
+            $("<button type='button' class=''>Add</button>").appendTo(div).on("click", function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                _this.addNewRow();
+                _this.refreshValue();
+                _this.fireOnChange(true);
+            });
+            $("<button type='button' class=''>Delete Last</button>").appendTo(div).on("click", function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                var rows = _this.getValue();
+                rows.pop();
+                _this.setValue(rows);
+                _this.fireOnChange(true);
+            });
+            $("<button type='button' class=''>Delete All</button>").appendTo(div).on("click", function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                _this.setValue([]);
+                _this.fireOnChange(true);
+            });
             return div;
         };
-        ArrayEditor.prototype.getItemButtonPanel = function () {
-            var div = $("<div style='float:left' class='item-button-container'>");
-            $("<button type='button' class='' data-i='0'>Delete</button>").appendTo(div);
-            $("<button type='button' class=''>Move down</button>").appendTo(div);
-            $("<button type='button' class=''>Move up</button>").appendTo(div);
+        ArrayEditor.prototype.getItemButtonPanel = function (i) {
+            var div = $("<div style='height:100%;display:table;'>");
+            var innerDiv = $("<div class='edit-item-buttons' style='display:table-cell;vertical-align:bottom;padding-bottom:1px'>").appendTo(div);
+            var cxt = this;
+            $("<button type='button' class=''>Delete</button>").appendTo(innerDiv).attr("data-i", i).on("click", function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                var i = parseInt(this.getAttribute('data-i'));
+                cxt.deleteRow(i, true);
+            });
+            $("<button type='button' class=''>Move down</button>").appendTo(innerDiv).attr("data-i", i).on("click", function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                var i = parseInt(this.getAttribute('data-i'));
+                var rows = cxt.getValue();
+                if (i >= rows.length - 1)
+                    return;
+                var tmp = rows[i + 1];
+                rows[i + 1] = rows[i];
+                rows[i] = tmp;
+                cxt.setValue(rows);
+                cxt.fireOnChange(true);
+            });
+            $("<button type='button' class=''>Move up</button>").appendTo(innerDiv).attr("data-i", i).on("click", function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                var i = parseInt(this.getAttribute('data-i'));
+                if (i <= 0)
+                    return;
+                var rows = cxt.getValue();
+                var tmp = rows[i - 1];
+                rows[i - 1] = rows[i];
+                rows[i] = tmp;
+                cxt.setValue(rows);
+                cxt.fireOnChange(true);
+            });
             return div;
         };
         ArrayEditor.prototype.getContainerClass = function () {
             return "array-container";
+        };
+        ArrayEditor.prototype.getDefault = function () {
+            return this.schema.default || [];
         };
         ArrayEditor.prototype.destroy = function () {
             _super.prototype.destroy.call(this);

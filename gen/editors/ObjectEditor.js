@@ -10,17 +10,18 @@ define(["require", "exports", "AbstractComponentContainerEditor"], function (req
             _super.call(this, options);
         }
         ObjectEditor.prototype.setValue = function (value, init) {
-            _super.prototype.setValue.call(this, value, init);
             _.each(this.editors, function (editor, key) {
                 editor.setValue(value[key], init);
             });
+            this.refreshValue();
+            this.fireOnChange(false, init);
             return this;
         };
         ObjectEditor.prototype.getValue = function () {
             var result = _super.prototype.getValue.call(this);
             for (var i in result) {
                 if (result.hasOwnProperty(i)) {
-                    if (!result[i])
+                    if (_.isUndefined(result[i]))
                         delete result[i];
                 }
             }
@@ -52,9 +53,9 @@ define(["require", "exports", "AbstractComponentContainerEditor"], function (req
             _super.prototype.preRender.call(this);
         };
         ObjectEditor.prototype.render = function () {
-            var _this = this;
+            var itemHolder = $("<div class='edit-container'>").appendTo(this.container);
             _.each(this.editors, function (editor, key) {
-                var holder = $("<div>").appendTo(_this.container);
+                var holder = $("<div>").appendTo(itemHolder);
                 editor.setContainer(holder);
                 editor.render();
             });
@@ -68,6 +69,9 @@ define(["require", "exports", "AbstractComponentContainerEditor"], function (req
         };
         ObjectEditor.prototype.getContainerClass = function () {
             return "object-container";
+        };
+        ObjectEditor.prototype.getDefault = function () {
+            return _.extend({}, this.schema.default || {});
         };
         ObjectEditor.prototype.destroy = function () {
             _super.prototype.destroy.call(this);

@@ -12,6 +12,7 @@ class StringEditor extends AbstractComponentEditor {
     }
 
     setValue(value: any, initial: boolean): AbstractComponentEditor {
+        if (_.isUndefined(value)) value = ""
         var changed = this.hasValueChanged(value)
         super.setValue(value, initial)
         this.input.val(value)

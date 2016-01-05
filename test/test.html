@@ -69,6 +69,7 @@
                                 "format": "table",
                                 "items": {
                                     "type": "object",
+                                    "format": "table",
                                     "properties": {
                                         "name": {
                                             "type": "string"
@@ -89,14 +90,6 @@
                             $("#area").text(JSON.stringify(e.getValue()))
                         });
                         
-                        $('.item-container').isotope({
-                            layoutMode: 'fitRows',
-                            itemSelector: '.object-container'
-                        });
-                        
-                        $('.array-item').isotope({
-                            layoutMode: 'fitRows'
-                        });
                     });
                     editor.watch("preRender", "root.inner.firstinner", function(e){
                         $("#area2").text("preRender")
@@ -114,6 +107,7 @@
     
     <div id="area"></div>
     <div id="area2"></div>
+    <button id="button">Click</button>
 </body>
 
 </html>

@@ -10,6 +10,8 @@ define(["require", "exports", "AbstractComponentEditor"], function (require, exp
             _super.call(this, options);
         }
         StringEditor.prototype.setValue = function (value, initial) {
+            if (!value)
+                value = "";
             var changed = this.hasValueChanged(value);
             _super.prototype.setValue.call(this, value, initial);
             this.input.val(value);

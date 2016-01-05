@@ -9,6 +9,7 @@ class ArrayEditor extends AbstractComponentContainerEditor {
     rows: Array<AbstractComponentEditor>;
     itemInfo: Globals.ItemInfoMap;
     itemContainer: JQuery;
+    layout: any;
 
     constructor(options: Globals.ComponentEditorOptions) {
         super(options)
@@ -37,7 +38,7 @@ class ArrayEditor extends AbstractComponentContainerEditor {
             }
         })
         for (var j = value.length; j < this.rows.length; j++) {
-            // self.destroyRow(self.rows[j])
+            this.destroyRow(this.rows[j])
             this.rows[j] = null
         }
         this.rows = this.rows.slice(0, value.length)
@@ -55,6 +56,15 @@ class ArrayEditor extends AbstractComponentContainerEditor {
         //this.refreshTabs(true)
         //this.refreshTabs()
         this.fireOnChange(false, initial)
+        if (this.layout) {
+            this.layout.isotope('layout')
+        } else {
+            if (this.schema.format === 'table') {
+                this.layout = $('.edit-container', this.itemContainer).isotope({
+                    layoutMode: 'fitRows'
+                })
+            }
+        }
         return this
     }
 
@@ -95,11 +105,9 @@ class ArrayEditor extends AbstractComponentContainerEditor {
         super.render()
     }
 
-    postRender(): void {
-        _.each(this.editors, function(editor, key) {
-            editor.postRender()
-        });
-        super.postRender()
+    addNewRow(value?: any, initial?: any, mergeValue?: boolean) {
+        this.addRow(value, initial, mergeValue)
+        //this.active_tab = this.rows[i].tab;
     }
 
     addRow(value?: any, initial?: any, mergeValue?: boolean) {
@@ -113,6 +121,25 @@ class ArrayEditor extends AbstractComponentContainerEditor {
             this.rows[i].setValue(value, initial)
         } 
         //self.refreshTabs();
+    }
+
+    deleteRow(i: number, change: boolean) {
+        var value = this.value;
+        var newval = [];
+        _.each(value, (row: any, j: number) => {
+            if (j === i) {
+            } else {
+                newval.push(row)
+            }
+        })
+        this.setValue(newval, false)
+        if (change) this.fireOnChange(true)
+    }
+
+    destroyRow(row: AbstractComponentEditor, hard?: boolean): void {
+        var holder = row.container
+        row.destroy()
+        holder.remove()
     }
 
     getElementEditor(i: number): AbstractComponentEditor {
@@ -131,7 +158,7 @@ class ArrayEditor extends AbstractComponentContainerEditor {
         ret.setContainer(holder).addClass("array-item")
         ret.render()
         ret.postRender()
-        this.getItemButtonPanel().appendTo(holder)
+        this.getItemButtonPanel(i).appendTo($(".edit-container", holder))
         return ret
     }
 
@@ -172,25 +199,76 @@ class ArrayEditor extends AbstractComponentContainerEditor {
         this.getButtonPanel().appendTo(div)
         return div
     }
-    
+
     getButtonPanel(): JQuery {
-        var div = $("<div class='button-container'>")
-        $("<button type='button' class=''>Add</button>").appendTo(div)
-        $("<button type='button' class=''>Delete Last</button>").appendTo(div)
-        $("<button type='button' class=''>Delete All</button>").appendTo(div)
+        var div = $("<div class='array-buttons'>")
+        $("<button type='button' class=''>Add</button>").appendTo(div).on("click", (e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            this.addNewRow()
+            this.refreshValue()
+            this.fireOnChange(true)
+        })
+        $("<button type='button' class=''>Delete Last</button>").appendTo(div).on("click", (e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            var rows = this.getValue()
+            rows.pop()
+            this.setValue(rows)
+            this.fireOnChange(true)
+        })
+        $("<button type='button' class=''>Delete All</button>").appendTo(div).on("click", (e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            this.setValue([])
+            this.fireOnChange(true)
+        })
         return div
     }
-    
-    getItemButtonPanel(): JQuery {
-        var div = $("<div style='float:left' class='item-button-container'>")
-        $("<button type='button' class='' data-i='0'>Delete</button>").appendTo(div)
-        $("<button type='button' class=''>Move down</button>").appendTo(div)
-        $("<button type='button' class=''>Move up</button>").appendTo(div)
+
+    getItemButtonPanel(i: number): JQuery {
+        var div = $("<div style='height:100%;display:table;'>")
+        var innerDiv = $("<div class='edit-item-buttons' style='display:table-cell;vertical-align:bottom;padding-bottom:1px'>").appendTo(div)
+        var cxt = this
+        $("<button type='button' class=''>Delete</button>").appendTo(innerDiv).attr("data-i", i).on("click", function(e) {
+            e.preventDefault()
+            e.stopPropagation()
+            var i = parseInt(this.getAttribute('data-i'))
+            cxt.deleteRow(i, true)
+        })
+        $("<button type='button' class=''>Move down</button>").appendTo(innerDiv).attr("data-i", i).on("click", function(e) {
+            e.preventDefault()
+            e.stopPropagation()
+            var i = parseInt(this.getAttribute('data-i'))
+            var rows = cxt.getValue()
+            if (i >= rows.length - 1) return
+            var tmp = rows[i + 1]
+            rows[i + 1] = rows[i]
+            rows[i] = tmp
+            cxt.setValue(rows)
+            cxt.fireOnChange(true)
+        })
+        $("<button type='button' class=''>Move up</button>").appendTo(innerDiv).attr("data-i", i).on("click", function(e) {
+            e.preventDefault()
+            e.stopPropagation()
+            var i = parseInt(this.getAttribute('data-i'))
+            if (i <= 0) return
+            var rows = cxt.getValue()
+            var tmp = rows[i - 1]
+            rows[i - 1] = rows[i]
+            rows[i] = tmp
+            cxt.setValue(rows)
+            cxt.fireOnChange(true)
+        })
         return div
     }
 
     getContainerClass(): string {
         return "array-container"
+    }
+
+    getDefault(): any {
+        return this.schema.default || []
     }
 
     destroy(): void {

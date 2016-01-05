@@ -13,10 +13,11 @@ class ObjectEditor extends AbstractComponentContainerEditor {
     }
 
     setValue(value: any, init: boolean): AbstractComponentEditor {
-        super.setValue(value, init)
         _.each(this.editors, function(editor, key) {
             editor.setValue(value[key], init)
         })
+        this.refreshValue()
+        this.fireOnChange(false, init)
         return this
     }
 
@@ -24,7 +25,7 @@ class ObjectEditor extends AbstractComponentContainerEditor {
         var result = super.getValue()
         for (var i in result) {
             if (result.hasOwnProperty(i)) {
-                if (!result[i]) delete result[i]
+                if (_.isUndefined(result[i])) delete result[i]
             }
         }
         return result
@@ -57,8 +58,9 @@ class ObjectEditor extends AbstractComponentContainerEditor {
     }
 
     render(): void {
+        var itemHolder = $("<div class='edit-container'>").appendTo(this.container)
         _.each(this.editors, (editor, key) => {
-            var holder = $("<div>").appendTo(this.container)
+            var holder = $("<div>").appendTo(itemHolder)
             editor.setContainer(holder)
             editor.render()
         });
@@ -75,7 +77,11 @@ class ObjectEditor extends AbstractComponentContainerEditor {
     getContainerClass(): string {
         return "object-container"
     }
-    
+
+    getDefault(): any {
+        return _.extend({}, this.schema.default || {})
+    }
+
     destroy(): void {
         super.destroy()
     }

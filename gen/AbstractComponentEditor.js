@@ -18,6 +18,7 @@ define(["require", "exports"], function (require, exports) {
             this.notify("render");
         };
         AbstractComponentEditor.prototype.postRender = function () {
+            this.setValue(this.getDefault(), true);
             this.notify("postRender");
         };
         AbstractComponentEditor.prototype.setValue = function (value, initial) {
@@ -72,13 +73,39 @@ define(["require", "exports"], function (require, exports) {
             var label = this.schema.title || this.key;
             var header = label;
             var description = this.schema.description || "";
-            var div = $("<div style='width:100%' class='content-header-container'>");
-            $("<div class='content-description'>").text(description).appendTo(div);
-            $("<div class='content-label'>").text(label).appendTo(div);
+            var div = $("<div class='header-container'>");
+            $("<div class='header-description'>").text(description).appendTo(div);
+            $("<div class='header-label'>").text(label).appendTo(div);
             return div;
         };
         AbstractComponentEditor.prototype.getContainerClass = function () {
-            return "content-container";
+            return "edit-item";
+        };
+        AbstractComponentEditor.prototype.getDefault = function () {
+            if (this.schema.hasOwnProperty("default"))
+                return this.schema.default;
+            if (this.schema.enum)
+                return this.schema.enum[0];
+            var type = this.schema.type || this.schema.oneOf;
+            if (type && Array.isArray(type))
+                type = type[0];
+            if (type && typeof type === "object")
+                type = type.type;
+            if (type && Array.isArray(type))
+                type = type[0];
+            if (type === "number")
+                return 0.0;
+            if (type === "boolean")
+                return false;
+            if (type === "integer")
+                return 0;
+            if (type === "string")
+                return "";
+            if (type === "object")
+                return {};
+            if (type === "array")
+                return [];
+            return null;
         };
         AbstractComponentEditor.prototype.destroy = function () {
             this.container.empty();

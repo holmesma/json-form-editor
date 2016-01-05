@@ -35,6 +35,7 @@ class AbstractComponentEditor {
     }
 
     postRender(): void {
+        this.setValue(this.getDefault(), true)
         this.notify("postRender")
     }
 
@@ -83,7 +84,7 @@ class AbstractComponentEditor {
         this.editor.notifyWatchers(events, this.path, evt)
     }
 
-    setContainer(container: JQuery):JQuery {
+    setContainer(container: JQuery): JQuery {
         this.container = container
         if (this.schema.id) this.container.attr('data-schemaid', this.schema.id)
         this.container.attr('data-schematype', this.schema.type)
@@ -96,14 +97,30 @@ class AbstractComponentEditor {
         var label = this.schema.title || this.key
         var header = label
         var description = this.schema.description || ""
-        var div = $("<div style='width:100%' class='content-header-container'>")
-        $("<div class='content-description'>").text(description).appendTo(div)
-        $("<div class='content-label'>").text(label).appendTo(div)
+        var div = $("<div class='header-container'>")
+        $("<div class='header-description'>").text(description).appendTo(div)
+        $("<div class='header-label'>").text(label).appendTo(div)
         return div
     }
 
     getContainerClass(): string {
-        return "content-container"
+        return "edit-item"
+    }
+
+    getDefault(): any {
+        if (this.schema.hasOwnProperty("default")) return this.schema.default
+        if (this.schema.enum) return this.schema.enum[0]
+        var type = this.schema.type || this.schema.oneOf
+        if (type && Array.isArray(type)) type = type[0]
+        if (type && typeof type === "object") type = type.type
+        if (type && Array.isArray(type)) type = type[0]
+            if (type === "number") return 0.0
+            if (type === "boolean") return false
+            if (type === "integer") return 0
+            if (type === "string") return ""
+            if (type === "object") return {}
+            if (type === "array") return []
+        return null;
     }
 
     destroy(): void {
