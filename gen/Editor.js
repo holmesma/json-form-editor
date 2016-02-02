@@ -71,6 +71,21 @@ define(["require", "exports", "Defaults", "Events", "WatchHelper", "editors/Arra
         Editor.prototype.resolveEditor = function (schema) {
             return schema.type;
         };
+        Editor.prototype.registerEditor = function (editor) {
+            this.editors = this.editors || {};
+            this.editors[editor.path] = editor;
+            return this;
+        };
+        Editor.prototype.unregisterEditor = function (editor) {
+            this.editors = this.editors || {};
+            this.editors[editor.path] = null;
+            return this;
+        };
+        Editor.prototype.getEditor = function (path) {
+            if (!this.editors)
+                return;
+            return this.editors[path];
+        };
         Editor.prototype.watch = function (events, path, callback) {
             return this.watchHelper.watch(events, path, callback);
         };
@@ -85,6 +100,15 @@ define(["require", "exports", "Defaults", "Events", "WatchHelper", "editors/Arra
         };
         Editor.prototype.notifyWatchers = function (event, path, evt) {
             this.watchHelper.notifyWatchers(event, path, evt);
+        };
+        Editor.prototype.compileTemplate = function (template, name) {
+            _.templateSettings = {
+                interpolate: /\{\{(.+?)\}\}/g
+            };
+            return function (context) {
+                var t = _.template(template);
+                return t(context);
+            };
         };
         Editor.defaults = Defaults;
         return Editor;

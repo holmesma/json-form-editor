@@ -68,8 +68,9 @@
                                 "type": "array",
                                 "format": "table",
                                 "items": {
+                                    "title" : "Title",
+                                    "headerTemplate": "{{i}} - {{self.name}}",
                                     "type": "object",
-                                    "format": "table",
                                     "properties": {
                                         "name": {
                                             "type": "string"
@@ -89,7 +90,7 @@
                         $("#button").click(function(){
                             $("#area").text(JSON.stringify(e.getValue()))
                         });
-                        
+                       
                     });
                     editor.watch("preRender", "root.inner.firstinner", function(e){
                         $("#area2").text("preRender")

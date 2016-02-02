@@ -40,17 +40,26 @@ define(["require", "exports", "AbstractComponentContainerEditor"], function (req
             this.rows = this.rows.slice(0, value.length);
             this.refreshValue(initial);
             this.fireOnChange(false, initial);
-            if (this.layout) {
-                this.layout.isotope('layout');
-            }
-            else {
+            if (value.length > 0) {
                 if (this.schema.format === 'table') {
-                    this.layout = $('.edit-container', this.itemContainer).isotope({
-                        layoutMode: 'fitRows'
-                    });
+                    this.layoutTable();
                 }
             }
             return this;
+        };
+        ArrayEditor.prototype.layoutTable = function () {
+            $(".array-item > .header-container", this.itemContainer).hide();
+            $(".edit-container", this.itemContainer).each(function (idx, el) {
+                if (idx != 0) {
+                }
+            });
+            if (this.layout) {
+                this.layout.isotope('destroy');
+                this.layout = undefined;
+            }
+            this.layout = $('.edit-container', this.itemContainer).isotope({
+                layoutMode: 'fitRows'
+            });
         };
         ArrayEditor.prototype.refreshValue = function (force) {
             var _this = this;
@@ -182,6 +191,7 @@ define(["require", "exports", "AbstractComponentContainerEditor"], function (req
                 _this.addNewRow();
                 _this.refreshValue();
                 _this.fireOnChange(true);
+                _this.layoutTable();
             });
             $("<button type='button' class=''>Delete Last</button>").appendTo(div).on("click", function (e) {
                 e.preventDefault();

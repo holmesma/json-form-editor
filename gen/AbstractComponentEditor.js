@@ -1,5 +1,4 @@
-/// <reference path="../lib/jquery.d.ts"/>
-define(["require", "exports"], function (require, exports) {
+define(["require", "exports", "Util"], function (require, exports, Util) {
     var AbstractComponentEditor = (function () {
         function AbstractComponentEditor(options) {
             this.options = options;
@@ -8,6 +7,7 @@ define(["require", "exports"], function (require, exports) {
             this.schema = options.schema;
             this.path = options.path;
             this.key = this.path.split('.').pop();
+            this.templateEngineName = "underscore";
         }
         AbstractComponentEditor.prototype.refreshValue = function () { };
         AbstractComponentEditor.prototype.preRender = function () {
@@ -18,8 +18,11 @@ define(["require", "exports"], function (require, exports) {
             this.notify("render");
         };
         AbstractComponentEditor.prototype.postRender = function () {
+            this.setupWatchListeners();
             this.setValue(this.getDefault(), true);
             this.notify("postRender");
+            this.editor.registerEditor(this);
+            this.onWatchedFieldChange();
         };
         AbstractComponentEditor.prototype.setValue = function (value, initial) {
             this.value = value;
@@ -54,6 +57,8 @@ define(["require", "exports"], function (require, exports) {
         AbstractComponentEditor.prototype.onChange = function (evt) {
             var type = (evt.type === "change") ? "change" : "initialise";
             this.notify(type, evt);
+            if (this.watchListener)
+                this.watchListener();
             if (evt.bubble)
                 this.change(evt);
         };
@@ -66,7 +71,7 @@ define(["require", "exports"], function (require, exports) {
                 this.container.attr('data-schemaid', this.schema.id);
             this.container.attr('data-schematype', this.schema.type);
             this.container.attr('data-schemapath', this.path);
-            this.container.addClass(this.getContainerClass());
+            this.container.addClass(this.getContainerClass()).css("padding-left", "20px");
             return container;
         };
         AbstractComponentEditor.prototype.getHeader = function () {
@@ -75,7 +80,8 @@ define(["require", "exports"], function (require, exports) {
             var description = this.schema.description || "";
             var div = $("<div class='header-container'>");
             $("<div class='header-description'>").text(description).appendTo(div);
-            $("<div class='header-label'>").text(label).appendTo(div);
+            this.header = $("<div class='header-label'>").text(label);
+            this.header.appendTo(div);
             return div;
         };
         AbstractComponentEditor.prototype.getContainerClass = function () {
@@ -107,7 +113,109 @@ define(["require", "exports"], function (require, exports) {
                 return [];
             return null;
         };
+        AbstractComponentEditor.prototype.setupWatchListeners = function () {
+            var _this = this;
+            this.watched = { items: {} };
+            if (this.schema.vars)
+                this.schema.watch = this.schema.vars;
+            this.watchedValues = { items: {} };
+            this.watchListener = function () {
+                if (_this.refreshWatchedFieldValues()) {
+                    _this.onWatchedFieldChange();
+                }
+            };
+            if (this.schema.hasOwnProperty('watch')) {
+                var pathParts = [];
+                for (var name in this.schema.watch) {
+                    if (!this.schema.watch.hasOwnProperty(name))
+                        continue;
+                    var path = this.schema.watch[name];
+                    if (Array.isArray(path)) {
+                        pathParts = [path[0]].concat(path[1].split('.'));
+                    }
+                    else {
+                        pathParts = path.split('.');
+                        if (!Util.closest(this.container, '[data-schemaid="' + pathParts[0] + '"]'))
+                            pathParts.unshift('#');
+                    }
+                    var first = pathParts.shift();
+                    if (first === '#')
+                        first = this.editor.schema.id || 'root';
+                    var root = Util.closest(this.container, '[data-schemaid="' + first + '"]');
+                    if (!root)
+                        throw "Could not find ancestor node with id " + first;
+                    var adjustedPath = root.attr('data-schemapath') + '.' + pathParts.join('.');
+                    this.editor.watch("*", adjustedPath, this.watchListener);
+                    this.watched.items[name] = adjustedPath;
+                }
+            }
+            if (this.schema.headerTemplate) {
+                this.headerTemplate = this.editor.compileTemplate(this.schema.headerTemplate, this.templateEngineName);
+            }
+        };
+        AbstractComponentEditor.prototype.refreshWatchedFieldValues = function () {
+            if (!this.watchedValues.items)
+                return;
+            var watched = { items: {} };
+            var changed = false;
+            var self = this;
+            if (this.watched.items) {
+                for (var name in this.watched.items) {
+                    if (!this.watched.items.hasOwnProperty(name))
+                        continue;
+                    var editor = this.editor.getEditor(this.watched.items[name]);
+                    var val = (editor) ? editor.getValue() : null;
+                    if (self.watchedValues.items[name] !== val)
+                        changed = true;
+                    watched.items[name] = val;
+                }
+            }
+            watched.self = this.getValue();
+            if (this.watchedValues.self !== watched.self)
+                changed = true;
+            this.watchedValues = watched;
+            return changed;
+        };
+        AbstractComponentEditor.prototype.onWatchedFieldChange = function () {
+            var vars = {};
+            if (this.headerTemplate) {
+                var wfv = this.getWatchedFieldValues();
+                vars = _.extend({
+                    key: this.key,
+                    i: this.key,
+                    i0: parseInt(this.key),
+                    i1: parseInt(this.key) + 1,
+                    title: this.getTitle(),
+                    self: wfv.self
+                }, wfv.items);
+                var headerText = this.headerTemplate(vars);
+                if (headerText !== this.headerText) {
+                    this.headerText = headerText;
+                    this.updateHeaderText();
+                }
+            }
+        };
+        AbstractComponentEditor.prototype.getWatchedFieldValues = function () {
+            return this.watchedValues;
+        };
+        AbstractComponentEditor.prototype.getTitle = function () {
+            return this.schema.title || this.key;
+        };
+        AbstractComponentEditor.prototype.updateHeaderText = function () {
+            if (this.header) {
+                this.header.text(this.getHeaderText());
+            }
+        };
+        AbstractComponentEditor.prototype.getHeaderText = function (title_only) {
+            if (this.headerText)
+                return this.headerText;
+            else if (title_only)
+                return this.schema.title;
+            else
+                return this.getTitle();
+        };
         AbstractComponentEditor.prototype.destroy = function () {
+            this.editor.unregisterEditor(this);
             this.container.empty();
         };
         return AbstractComponentEditor;

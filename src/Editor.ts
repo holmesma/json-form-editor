@@ -20,6 +20,7 @@ class Editor extends Events {
     schema: any;
     root: AbstractComponentEditor;
     ready: boolean;
+    editors: Globals.Editors;
 
     constructor(options: Globals.EditorOptions) {
         super({ "editor:ready": "memory" })
@@ -88,6 +89,23 @@ class Editor extends Events {
         return schema.type
     }
 
+    registerEditor(editor: AbstractComponentEditor): Editor {
+        this.editors = this.editors || {}
+        this.editors[editor.path] = editor
+        return this
+    }
+
+    unregisterEditor(editor: AbstractComponentEditor): Editor {
+        this.editors = this.editors || {}
+        this.editors[editor.path] = null
+        return this;
+    }
+
+    getEditor(path: string): AbstractComponentEditor {
+        if (!this.editors) return
+        return this.editors[path]
+    }
+
     watch(events: string, path: string, callback: () => void): WatchHelper {
         return this.watchHelper.watch(events, path, callback)
     }
@@ -108,6 +126,16 @@ class Editor extends Events {
         this.watchHelper.notifyWatchers(event, path, evt)
     }
 
+    compileTemplate(template: string, name: string): (...data: any[]) => string {
+        // temp implmentation
+        _.templateSettings = {
+            interpolate: /\{\{(.+?)\}\}/g
+        }
+        return function(context) {
+            var t = _.template(template)
+            return t(context)
+        }
+    }
 
 }
 export = Editor;

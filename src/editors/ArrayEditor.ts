@@ -56,16 +56,31 @@ class ArrayEditor extends AbstractComponentContainerEditor {
         //this.refreshTabs(true)
         //this.refreshTabs()
         this.fireOnChange(false, initial)
-        if (this.layout) {
-            this.layout.isotope('layout')
-        } else {
+        if (value.length > 0) {
             if (this.schema.format === 'table') {
-                this.layout = $('.edit-container', this.itemContainer).isotope({
-                    layoutMode: 'fitRows'
-                })
+                this.layoutTable()
             }
         }
         return this
+    }
+
+    layoutTable(): void {
+        $(".array-item > .header-container", this.itemContainer).hide()
+        $(".edit-container", this.itemContainer).each(function(idx, el) {
+            //if (idx % 10 !== 0) {
+                if (idx != 0) {
+                //$(".header-container", el).hide()
+            }
+        })
+        if (this.layout) {
+            this.layout.isotope('destroy')
+            this.layout = undefined
+        }
+        this.layout = $('.edit-container', this.itemContainer).isotope({
+            layoutMode: 'fitRows'
+        })
+
+
     }
 
     refreshValue(force?: boolean) {
@@ -208,6 +223,7 @@ class ArrayEditor extends AbstractComponentContainerEditor {
             this.addNewRow()
             this.refreshValue()
             this.fireOnChange(true)
+            this.layoutTable()
         })
         $("<button type='button' class=''>Delete Last</button>").appendTo(div).on("click", (e) => {
             e.preventDefault()

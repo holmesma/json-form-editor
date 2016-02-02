@@ -58,3 +58,15 @@ export interface ItemInfo {
     childEditors: Array<string>; // guessed
 }
 
+export interface Watched {
+  items: WatchedList;
+  self?: string;
+}
+
+export interface WatchedList {
+  [key: string]: string;
+}
+
+export interface TemplateEngineContext {
+  [key: string]: String;
+}
